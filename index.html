@@ -1,3 +1,4 @@
+<!--
 <!DOCTYPE html>
 <link rel="stylesheet" type="text/css" href="https://charlievelas.github.io/web.css">
 <html lang="en">
@@ -6,5 +7,92 @@
 </head>
 <body>
 <p>Hello Barcelona!</p>
+</body>
+</html>
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Input with Buttons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            max-width: 300px;
+            text-align: center;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            font-size: 1rem;
+            margin: 10px 0;
+        }
+        button {
+            padding: 8px 15px;
+            margin: 5px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button.add {
+            background-color: #28a745;
+            color: white;
+        }
+        button.subtract {
+            background-color: #dc3545;
+            color: white;
+        }
+        button.reset {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Number Input Example</h2>
+        <input type="number" id="numberBox" value="0" min="0" max="100">
+        <div>
+            <button class="add" onclick="changeValue(1)">+ Add</button>
+            <button class="subtract" onclick="changeValue(-1)">- Subtract</button>
+            <button class="reset" onclick="resetValue()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        // Function to change the number value
+        function changeValue(amount) {
+            const input = document.getElementById('numberBox');
+            let currentValue = parseInt(input.value) || 0;
+            let newValue = currentValue + amount;
+
+            // Ensure value stays within min/max
+            if (input.min !== "" && newValue < parseInt(input.min)) return;
+            if (input.max !== "" && newValue > parseInt(input.max)) return;
+
+            input.value = newValue;
+        }
+
+        // Function to reset the number value
+        function resetValue() {
+            document.getElementById('numberBox').value = 0;
+        }
+    </script>
+
 </body>
 </html>
