@@ -1,15 +1,32 @@
 // app.js
-// Basic client-side UI + plotting for EtaPi moments demo.
-// For this quick test we fetch precomputed output files from the repo
-// and plot them using Plotly. Next step: replace fetch with a JS port
-// of the computation so results are produced in-browser.
+// Client-side plotting for EtaPi moments.
+// - Generates dynamic plots for all moments H^0(LM) and -H^1(LM) for L=0..4, M=0..L
+// - Generates BA plots (BA 4pi, BA along y, binned BA).
+// - Data source:
+//     * If a client-side compute function `computeMomentsClient(params)` is provided (pure JS port or WASM wrapper),
+//       the page will call it and use its results (preferred).
+//     * Otherwise the demo will fetch existing data files moment0.txt, moment1.txt, BA.txt from the repo's
+//       EtaPi_moments folder and plot them. This keeps the plotting dynamic (no PNGs).
+//
+// Next step: replace the "fallback fetch" by a true JS/WASM compute routine so the outputs depend on the inputs.
 
 (function () {
   const startBtn = document.getElementById('startBtn');
   const status = document.getElementById('status');
-  const downloadsDiv = document.getElementById('downloads');
+  const downloads = document.getElementById('downloads');
+  const plotsContainer = document.getElementById('plots');
 
-  // Raw file URLs (public GitHub raw content). Adjust branch/path if needed.
+  // Column ordering in the moment files (per PHP/gplot):
+  // columns: m, 00, 10,11, 20,21,22, 30,31,32,33, 40,41,42,43,44
+  const LM_ORDER = [
+    {L:0,M:0},                 // col 1 (index 1 in file, but index 0 here after m)
+    {L:1,M:0}, {L:1,M:1},
+    {L:2,M:0}, {L:2,M:1}, {L:2,M:2},
+    {L:3,M:0}, {L:3,M:1}, {L:3,M:2}, {L:3,M:3},
+    {L:4,M:0}, {L:4,M:1}, {L:4,M:2}, {L:4,M:3}, {L:4,M:4}
+  ];
+
+  // Raw URLs (adjust branch if needed)
   const rawBase = 'https://raw.githubusercontent.com/charlievelas/charlievelas.github.io/main/EtaPi_moments/';
   const urls = {
     moment0: rawBase + 'moment0.txt',
@@ -17,52 +34,85 @@
     ba:      rawBase + 'BA.txt'
   };
 
+  // Build plot boxes for each LM in the same sequence as gnuplot.txt
+  function buildPlotBoxes() {
+    plotsContainer.innerHTML = '';
+    // H moments
+    for (let idx = 0; idx < LM_ORDER.length; idx++) {
+      const {L, M} = LM_ORDER[idx];
+      const id = `pH${L}${M}`;
+      const box = document.createElement('div');
+      box.className = 'plotBox';
+      box.id = id;
+      const title = document.createElement('div');
+      title.innerHTML = `<strong>H^0(${L}${M}) & -H^1(${L}${M})</strong>`;
+      title.style.marginBottom = '6px';
+      box.appendChild(title);
+      plotsContainer.appendChild(box);
+    }
+    // BA plots (two)
+    const baBox1 = document.createElement('div');
+    baBox1.className = 'plotBox';
+    baBox1.id = 'pBA';
+    baBox1.innerHTML = '<strong>Beam Asymmetry Integrated (BA 4π and BA_y)</strong>';
+    plotsContainer.appendChild(baBox1);
+
+    const baBox2 = document.createElement('div');
+    baBox2.className = 'plotBox';
+    baBox2.id = 'pBAy';
+    baBox2.innerHTML = '<strong>Beam Asymmetry Binned / Additional</strong>';
+    plotsContainer.appendChild(baBox2);
+  }
+
+  // Parse whitespace-delimited numeric table into array of rows (numbers)
   function parseTable(text) {
-    // Returns array of rows: each row is array of numbers.
-    const rows = text.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#'));
+    const rows = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length && !l.startsWith('#'));
     return rows.map(line => line.split(/\s+/).map(Number));
   }
 
-  function plotMomentPair(moment0, moment1) {
-    // expect each: rows with columns: m, H00, H10, H11, ...
-    const m0 = moment0.map(r => r[0]);
-    const H00_0 = moment0.map(r => r[1]);
-    const H10_0 = moment0.map(r => r[2]);
-    const H11_0 = moment0.map(r => r[3]);
+  // Plot all H^0(LM) and -H^1(LM)
+  function plotAllMoments(moment0Rows, moment1Rows) {
+    // moment0Rows/moment1Rows: arrays of number arrays
+    // both expected to have same m column length; if not, use intersection by m or fallback to moment0 m
+    const m0 = moment0Rows.map(r => r[0]);
 
-    const m1 = moment1.map(r => r[0]);
-    const H00_1 = moment1.map(r => r[1]);
-    const H10_1 = moment1.map(r => r[2]);
+    // For each LM in LM_ORDER, pick corresponding column index in file:
+    // File indices (one-based): 1=m, 2=00, 3=10,4=11,5=20 ... so mapping colIndex = index_in_LM_ORDER + 1
+    for (let idx = 0; idx < LM_ORDER.length; idx++) {
+      const colIndex = idx + 1; // zero-based row array: 0=m, 1=00, 2=10...
+      const L = LM_ORDER[idx].L;
+      const M = LM_ORDER[idx].M;
+      const divId = `pH${L}${M}`;
+      const y0 = moment0Rows.map(r => r[colIndex]);
+      const y1 = moment1Rows.map(r => r[colIndex]);
+      const trace0 = { x: m0, y: y0, mode: 'lines', name: `H^0(${L}${M})`, line: { color: 'red' } };
+      const trace1 = { x: m0, y: y1.map(v => -v), mode: 'lines', name: `-H^1(${L}${M})`, line: { color: 'blue' } };
 
-    // Plot H00 (moment0 vs moment1 overlay)
-    Plotly.newPlot('plotH00', [
-      { x: m0, y: H00_0, mode: 'lines', name: 'H^0(00)', line:{color:'red'} },
-      { x: m1, y: H00_1.map(v=> -v), mode: 'lines', name: '-H^1(00)', line:{color:'blue'} }
-    ], { title: 'H^0(00) and -H^1(00)', xaxis:{title:'m (GeV)'} });
-
-    // Plot H10
-    Plotly.newPlot('plotH10', [
-      { x: m0, y: H10_0, mode: 'lines', name: 'H^0(10)', line:{color:'red'} },
-      { x: m1, y: H10_1.map(v=> -v), mode: 'lines', name: '-H^1(10)', line:{color:'blue'} }
-    ], { title: 'H^0(10) and -H^1(10)', xaxis:{title:'m (GeV)'} });
+      const layout = { margin: { t: 24, b: 36, l: 44, r: 8 }, xaxis: { title: 'm (GeV)' }, yaxis: { title: `H(${L}${M})` } };
+      Plotly.newPlot(divId, [trace0, trace1], layout, { responsive: true });
+    }
   }
 
+  // Plot BA outputs (BA.txt expected format: m ba4pi bay ba_binned)
   function plotBA(baRows) {
-    // BA.txt format (per PHP): columns: m, ba4pi, bay, ba_binned
     const m = baRows.map(r => r[0]);
     const ba4pi = baRows.map(r => r[1]);
     const bay = baRows.map(r => r[2]);
-    const ba_binned = baRows.map(r => r[3] || NaN);
+    const ba_binned = baRows.map(r => (r.length > 3 ? r[3] : NaN));
 
-    Plotly.newPlot('plotBA', [
-      { x: m, y: ba4pi, mode:'lines', name:'BA 4π', line:{color:'red'} },
-      { x: m, y: bay, mode:'lines', name:'BA along y', line:{color:'blue'} },
-      { x: m, y: ba_binned, mode:'lines', name:'BA binned', line:{color:'green'} }
-    ], { title: 'Beam Asymmetries', xaxis:{title:'m (GeV)'} });
+    Plotly.newPlot('pBA', [
+      { x: m, y: ba4pi, mode: 'lines', name: 'BA 4π', line: { color: 'red' } },
+      { x: m, y: bay, mode: 'lines', name: 'BA along y', line: { color: 'blue' } }
+    ], { margin: { t: 24 }, xaxis: { title: 'm (GeV)' } });
+
+    Plotly.newPlot('pBAy', [
+      { x: m, y: ba_binned, mode: 'lines', name: 'BA binned', line: { color: 'green' } }
+    ], { margin: { t: 24 }, xaxis: { title: 'm (GeV)' } });
   }
 
+  // Create download links for produced data
   function makeDownloadLink(name, text) {
-    const blob = new Blob([text], {type:'text/plain'});
+    const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -72,40 +122,112 @@
     return a;
   }
 
-  async function loadAndPlot() {
+  // Fallback: fetch precomputed numeric files from repo and plot them (no PNGs)
+  async function fetchAndPlotFallback() {
+    status.textContent = 'Fetching precomputed numeric files...';
     try {
-      status.textContent = 'Fetching moment0.txt ...';
-      const [m0res, m1res, bares] = await Promise.all([fetch(urls.moment0), fetch(urls.moment1), fetch(urls.ba)]);
-      if (!m0res.ok || !m1res.ok || !bares.ok) {
-        status.textContent = 'Error fetching files. Check file URLs or network (look in console).';
-        console.error('Fetch statuses', m0res.status, m1res.status, bares.status);
+      const [r0, r1, rb] = await Promise.all([fetch(urls.moment0), fetch(urls.moment1), fetch(urls.ba)]);
+      if (!r0.ok || !r1.ok || !rb.ok) {
+        console.warn('One or more fetches failed', r0.status, r1.status, rb.status);
+        status.textContent = 'Error fetching numeric files (see console).';
         return;
       }
-      status.textContent = 'Parsing files ...';
-      const [m0txt, m1txt, batxt] = await Promise.all([m0res.text(), m1res.text(), bares.text()]);
-      const moment0 = parseTable(m0txt);
-      const moment1 = parseTable(m1txt);
-      const ba = parseTable(batxt);
+      const [txt0, txt1, txtb] = await Promise.all([r0.text(), r1.text(), rb.text()]);
+      const rows0 = parseTable(txt0);
+      const rows1 = parseTable(txt1);
+      const rowsb = parseTable(txtb);
 
-      status.textContent = 'Plotting ...';
-      plotMomentPair(moment0, moment1);
-      plotBA(ba);
+      plotAllMoments(rows0, rows1);
+      plotBA(rowsb);
 
-      downloadsDiv.innerHTML = '';
-      downloadsDiv.appendChild(makeDownloadLink('moment0.txt', m0txt));
-      downloadsDiv.appendChild(makeDownloadLink('moment1.txt', m1txt));
-      downloadsDiv.appendChild(makeDownloadLink('BA.txt', batxt));
+      downloads.innerHTML = '';
+      downloads.appendChild(makeDownloadLink('moment0.txt', txt0));
+      downloads.appendChild(makeDownloadLink('moment1.txt', txt1));
+      downloads.appendChild(makeDownloadLink('BA.txt', txtb));
 
-      status.textContent = 'Done: plotted fetched files. To compute results client-side, ask me to port the C code into JS (next step).';
+      status.textContent = 'Plotted precomputed numeric files.';
     } catch (err) {
       console.error(err);
-      status.textContent = 'Error: ' + err.message;
+      status.textContent = 'Error fetching/plotting: ' + err.message;
     }
   }
 
-  startBtn.addEventListener('click', function () {
-    status.textContent = 'Starting fetch/plot...';
-    loadAndPlot();
+  // Main entry: compute & plot.
+  // If a real client-side compute routine exists, call it.
+  // Expect computeMomentsClient(params) -> { moment0Text, moment1Text, baText }
+  async function computeAndPlot() {
+    // Read form parameters
+    const params = {
+      Eg: Number(document.getElementById('Eg').value),
+      t:  Number(document.getElementById('t').value),
+      dm: Number(document.getElementById('dm').value),
+      FR: Array.from(document.getElementsByName('FR')).find(r => r.checked).value,
+      m0: Number(document.getElementById('m0').value),
+      g0: Number(document.getElementById('g0').value),
+      m1: Number(document.getElementById('m1').value),
+      g1: Number(document.getElementById('g1').value),
+      m2: Number(document.getElementById('m2').value),
+      g2: Number(document.getElementById('g2').value),
+      m2p: Number(document.getElementById('m2p').value),
+      g2p: Number(document.getElementById('g2p').value)
+    };
+
+    status.textContent = 'Starting computation...';
+
+    // If user (or a follow-up task) supplies a client-side compute function, call it.
+    // The function should return an object with { moment0Text, moment1Text, baText } (strings like files),
+    // or arrays (moment0Rows, moment1Rows, baRows).
+    if (typeof window.computeMomentsClient === 'function') {
+      status.textContent = 'Running client-side compute routine...';
+      try {
+        const out = await window.computeMomentsClient(params);
+        // out may return parsed rows or raw text; handle both
+        let rows0, rows1, rowsb;
+        if (out.moment0Text) rows0 = parseTable(out.moment0Text);
+        else if (out.moment0Rows) rows0 = out.moment0Rows;
+        if (out.moment1Text) rows1 = parseTable(out.moment1Text);
+        else if (out.moment1Rows) rows1 = out.moment1Rows;
+        if (out.baText) rowsb = parseTable(out.baText);
+        else if (out.baRows) rowsb = out.baRows;
+
+        if (!rows0 || !rows1) {
+          status.textContent = 'Computation returned incomplete data; falling back to precomputed files.';
+          await fetchAndPlotFallback();
+          return;
+        }
+
+        plotAllMoments(rows0, rows1);
+        if (rowsb) plotBA(rowsb);
+
+        downloads.innerHTML = '';
+        if (out.moment0Text) downloads.appendChild(makeDownloadLink('moment0.txt', out.moment0Text));
+        if (out.moment1Text) downloads.appendChild(makeDownloadLink('moment1.txt', out.moment1Text));
+        if (out.baText) downloads.appendChild(makeDownloadLink('BA.txt', out.baText));
+
+        status.textContent = 'Plotted results from client-side compute routine.';
+        return;
+      } catch (err) {
+        console.error('Client compute failed:', err);
+        status.textContent = 'Client compute failed (see console). Falling back to precomputed files.';
+        await fetchAndPlotFallback();
+        return;
+      }
+    }
+
+    // Default: fallback to fetching the repo files and plotting them dynamically
+    status.textContent = 'No client compute routine found; plotting precomputed numeric files.';
+    await fetchAndPlotFallback();
+  }
+
+  // Initialize UI
+  buildPlotBoxes();
+  status.textContent = 'Ready.';
+
+  startBtn.addEventListener('click', async function () {
+    status.textContent = 'Preparing plots...';
+    // Rebuild plot boxes to ensure a fresh set
+    buildPlotBoxes();
+    await computeAndPlot();
   });
 
 })();
