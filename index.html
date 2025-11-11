@@ -16,6 +16,9 @@
     #status { margin-top:10px; color:#333 }
     .download-links { margin-top:10px; }
     .controls { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    table.params { width:100%; border-collapse: collapse; }
+    table.params td, table.params th { padding:6px; vertical-align:middle; }
+    table.params input[type="number"] { width:90px; }
   </style>
 </head>
 <body>
@@ -23,9 +26,8 @@
 
   <p>
     This page replaces the PHP+gnuplot flow by plotting the moments in the browser.
-    It uses the same input fields as the PHP form. Currently the plotting routine reads numeric files
-    (moment0.txt, moment1.txt, BA.txt) from the repository when no compute routine is available.
-    I will plug a real client-side compute routine (pure JS or WASM) on request so results change with the inputs.
+    The form below now exposes the resonance normalization (N_R) and spin-flip coupling (δ_R)
+    for each resonance so the client-side computation receives the same set of parameters.
   </p>
 
   <form id="simuForm" onsubmit="return false;">
@@ -42,22 +44,47 @@
 
     <fieldset>
       <legend>Model parameters (resonances)</legend>
-      <div class="row">
-        <label>m0 (a0)</label><input id="m0" name="m0" type="number" step="0.001" value="0.980" />
-        <label>g0</label><input id="g0" name="g0" type="number" step="0.001" value="0.075" />
-      </div>
-      <div class="row">
-        <label>m1 (π1)</label><input id="m1" name="m1" type="number" step="0.001" value="1.564" />
-        <label>g1</label><input id="g1" name="g1" type="number" step="0.001" value="0.492" />
-      </div>
-      <div class="row">
-        <label>m2 (a2)</label><input id="m2" name="m2" type="number" step="0.001" value="1.318" />
-        <label>g2</label><input id="g2" name="g2" type="number" step="0.001" value="0.107" />
-      </div>
-      <div class="row">
-        <label>m2p (a2')</label><input id="m2p" name="m2p" type="number" step="0.001" value="1.722" />
-        <label>g2p</label><input id="g2p" name="g2p" type="number" step="0.001" value="0.247" />
-      </div>
+      <table class="params">
+        <thead>
+          <tr>
+            <th>Resonance</th>
+            <th>mass (GeV)</th>
+            <th>width (GeV)</th>
+            <th>normalization N_R</th>
+            <th>spin-flip δ_R</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>a0(980)</td>
+            <td><input id="m0" name="m0" type="number" step="0.001" value="0.980" /></td>
+            <td><input id="g0" name="g0" type="number" step="0.001" value="0.075" /></td>
+            <td><input id="n0" name="n0" type="number" step="0.01" value="1.00" /></td>
+            <td><input id="d0" name="d0" type="number" step="0.01" value="1.00" /></td>
+          </tr>
+          <tr>
+            <td>π1(1600)</td>
+            <td><input id="m1" name="m1" type="number" step="0.001" value="1.564" /></td>
+            <td><input id="g1" name="g1" type="number" step="0.001" value="0.492" /></td>
+            <td><input id="n1" name="n1" type="number" step="0.01" value="-0.03" /></td>
+            <td><input id="d1" name="d1" type="number" step="0.01" value="-5.0" /></td>
+          </tr>
+          <tr>
+            <td>a2(1320)</td>
+            <td><input id="m2" name="m2" type="number" step="0.001" value="1.318" /></td>
+            <td><input id="g2" name="g2" type="number" step="0.001" value="0.107" /></td>
+            <td><input id="n2" name="n2" type="number" step="0.01" value="-0.11" /></td>
+            <td><input id="d2" name="d2" type="number" step="0.01" value="-2.0" /></td>
+          </tr>
+          <tr>
+            <td>a2(1700)</td>
+            <td><input id="m2p" name="m2p" type="number" step="0.001" value="1.722" /></td>
+            <td><input id="g2p" name="g2p" type="number" step="0.001" value="0.247" /></td>
+            <td><input id="n2p" name="n2p" type="number" step="0.01" value="-0.04" /></td>
+            <td><input id="d2p" name="d2p" type="number" step="0.01" value="-2.0" /></td>
+          </tr>
+        </tbody>
+      </table>
     </fieldset>
 
     <div class="controls">
