@@ -1,8 +1,6 @@
 // app.js
-// Client-side plotting for EtaPi moments — always generates plots in-browser.
-// Updated: the Frame radio is mapped to a numeric isGJ flag (0 or 1) and passed
-// into the compute routine as params.isGJ (mirrors main.c's isGJ input).
-// The compute routine uses params.isGJ to apply the Gottfried-Jackson mixing.
+// Client-side plotting for EtaPi moments — uses resonance normalization (N_R)
+// and spin-flip coupling (δ_R) from the form inputs.
 
 (function () {
   const startBtn = document.getElementById('startBtn');
@@ -10,13 +8,12 @@
   const downloads = document.getElementById('downloads');
   const plotsContainer = document.getElementById('plots');
 
-  // LM order used by gnuplot.txt / original PHP: columns after m
   const LM_ORDER = [
-    {L:0,M:0},                 // 00
-    {L:1,M:0}, {L:1,M:1},      // 10,11
-    {L:2,M:0}, {L:2,M:1}, {L:2,M:2}, // 20,21,22
-    {L:3,M:0}, {L:3,M:1}, {L:3,M:2}, {L:3,M:3}, // 30..33
-    {L:4,M:0}, {L:4,M:1}, {L:4,M:2}, {L:4,M:3}, {L:4,M:4} // 40..44
+    {L:0,M:0},
+    {L:1,M:0}, {L:1,M:1},
+    {L:2,M:0}, {L:2,M:1}, {L:2,M:2},
+    {L:3,M:0}, {L:3,M:1}, {L:3,M:2}, {L:3,M:3},
+    {L:4,M:0}, {L:4,M:1}, {L:4,M:2}, {L:4,M:3}, {L:4,M:4}
   ];
 
   function buildPlotBoxes() {
@@ -41,17 +38,15 @@
     plotsContainer.appendChild(baBox2);
   }
 
-  // parse text table to rows of numbers
   function parseTable(text) {
     const rows = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length && !l.startsWith('#'));
     return rows.map(line => line.split(/\s+/).map(Number));
   }
 
-  // plotting helpers (Plotly)
   function plotAllMoments(moment0Rows, moment1Rows) {
     const m0 = moment0Rows.map(r => r[0]);
     for (let idx = 0; idx < LM_ORDER.length; idx++) {
-      const colIndex = idx + 1; // 0=m, 1=00, 2=10...
+      const colIndex = idx + 1;
       const {L, M} = LM_ORDER[idx];
       const divId = `pH${L}${M}`;
       const y0 = moment0Rows.map(r => r[colIndex]);
@@ -86,21 +81,17 @@
     return a;
   }
 
-  // --------- Synthetic generator (replaceable) ----------
-  // This function creates moment0/moment1/ba data from input params.
-  // It now honors params.isGJ (numeric, 0/1) — same role as isGJ in main.c.
+  // compute routine uses normalization (N_R) and spin-flip (del) from params
   async function computeMomentsClient(params) {
-    // constants
     const MP = 0.93827203, MPI = 0.13957061, META = 0.547682;
-    // collect resonance params from form (m,g). Use defaults if missing.
+    // read normalization and delta values
     const res = [
-      { m: params.m0 || 0.98, g: params.g0 || 0.075, N: 1.0, del: 1.0 },
-      { m: params.m1 || 1.564, g: params.g1 || 0.492, N: 1.0, del: -5.0 },
-      { m: params.m2 || 1.318, g: params.g2 || 0.107, N: 1.0, del: -2.0 },
-      { m: params.m2p || 1.722, g: params.g2p || 0.247, N: 1.0, del: -2.0 }
+      { m: params.m0 || 0.98, g: params.g0 || 0.075, N: params.n0 || 1.0, del: params.d0 || 1.0 },
+      { m: params.m1 || 1.564, g: params.g1 || 0.492, N: params.n1 || -0.03, del: params.d1 || -5.0 },
+      { m: params.m2 || 1.318, g: params.g2 || 0.107, N: params.n2 || -0.11, del: params.d2 || -2.0 },
+      { m: params.m2p|| 1.722, g: params.g2p|| 0.247, N: params.n2p|| -0.04, del: params.d2p|| -2.0 }
     ];
 
-    // build mass grid
     let dm = Number(params.dm) || 0.02;
     if (dm <= 0 || !isFinite(dm)) dm = 0.02;
     const mMin = META + MPI;
@@ -108,14 +99,12 @@
     const masses = [];
     for (let m = mMin; m <= mMax + 1e-12; m += dm) masses.push(parseFloat(m.toFixed(6)));
 
-    // Breit-Wigner magnitude (simple)
     function bwMag(mass, mR, gR) {
       const num = mR * gR;
       const den = Math.sqrt(Math.pow(mR*mR - mass*mass, 2) + Math.pow(mR*gR, 2));
       return num / Math.max(den, 1e-12);
     }
 
-    // mixing angle theta for rotation approx (depends on m, Eg, t)
     function mixingTheta(m, Eg, t) {
       const center = 1.318;
       const width = 0.25;
@@ -142,29 +131,29 @@
       return out;
     }
 
-    // energy-dependent scale to mimic s^alpha(t) behaviour (rough)
     const Eg = Number(params.Eg) || 8.5;
     const tval = Number(params.t) || -0.1;
     const sScale = Math.pow(1 + (Eg / 10), 0.5) * Math.exp(-Math.abs(tval) * 0.5);
-
-    // beam polarization factor proxy
     const asymFactor = 0.25 + 0.25 * Math.tanh((Eg - 6.0) / 3.0) * Math.exp(-Math.abs(tval) * 0.8);
 
     const moment0Rows = [];
     const moment1Rows = [];
     const baRows = [];
 
-    // params.isGJ is numeric (0 or 1) — map from main.c's isGJ
     const isGJ = Number(params.isGJ) || 0;
 
     for (const m of masses) {
+      // combine resonances using their N and del weights
       const bwVals = res.map(r => bwMag(m, r.m, r.g));
       let ampSum = 0;
-      for (let i = 0; i < res.length; i++) ampSum += bwVals[i] * res[i].N;
+      for (let i = 0; i < res.length; i++) {
+        // include normalization and a small effect from spin-flip coupling (delta)
+        const weight = res[i].N * (1 + 0.02 * res[i].del);
+        ampSum += bwVals[i] * weight;
+      }
 
       const H00 = Math.max(0, sScale * ampSum * (1 + 0.6 * Math.exp(-Math.pow(m - 1.0, 2) / 0.08)));
 
-      // produce columns for LM_ORDER using shape factors
       const cols0 = [];
       const cols1 = [];
       for (let idx = 0; idx < LM_ORDER.length; idx++) {
@@ -172,14 +161,16 @@
         const Lscale = Math.exp(-0.8 * L);
         const Mscale = 1 + 0.25 * M;
         const osc = 1 + 0.15 * Math.sin(3.0 * m * (1 + 0.15 * L + 0.05 * M));
-        const val0 = H00 * Lscale * Mscale * osc * (0.6 + 0.4 * Math.cos((L + 1) * m * 1.2));
+        // use N and delta again in the per-column shape (small modulation)
+        const smallResFactor = 1 + 0.01 * res[0].del; // lightweight demo effect
+        const val0_base = H00 * Lscale * Mscale * osc * (0.6 + 0.4 * Math.cos((L + 1) * m * 1.2));
+        const val0 = val0_base * smallResFactor;
         const sign = ((L + M) % 2 === 0) ? 1 : -1;
         const val1 = sign * val0 * asymFactor * (0.8 + 0.2 * Math.sin(m * 2.5));
         cols0.push(val0);
         cols1.push(val1);
       }
 
-      // If isGJ == 1 apply mixing by groups of L (approximate GJ rotation)
       if (isGJ === 1) {
         let out0 = [], out1 = [];
         let pos = 0;
@@ -210,23 +201,18 @@
       return rows.map(r => r.map(v => Number.isFinite(v) ? v.toPrecision(8) : 'NaN').join(' ')).join('\n');
     }
 
-    const moment0Text = rowsToText(moment0Rows);
-    const moment1Text = rowsToText(moment1Rows);
-    const baText = rowsToText(baRows);
-
     return {
-      moment0Text, moment1Text, baText,
+      moment0Text: rowsToText(moment0Rows),
+      moment1Text: rowsToText(moment1Rows),
+      baText: rowsToText(baRows),
       moment0Rows, moment1Rows, baRows
     };
   }
-  // --------- end synthetic generator ----------
 
-  // Main compute & plot flow
   async function computeAndPlot() {
     statusEl.textContent = 'Computing moments in browser...';
-    // read params from form, map FR radio to numeric isGJ like main.c expects
     const FRvalue = Array.from(document.getElementsByName('FR')).find(r => r.checked).value;
-    const isGJflag = (Number(FRvalue) === 1) ? 1 : 0; // explicit mapping
+    const isGJflag = (Number(FRvalue) === 1) ? 1 : 0;
 
     const params = {
       Eg: Number(document.getElementById('Eg').value),
@@ -236,16 +222,23 @@
       isGJ: isGJflag,
       m0: Number(document.getElementById('m0').value),
       g0: Number(document.getElementById('g0').value),
+      n0: Number(document.getElementById('n0').value),
+      d0: Number(document.getElementById('d0').value),
       m1: Number(document.getElementById('m1').value),
       g1: Number(document.getElementById('g1').value),
+      n1: Number(document.getElementById('n1').value),
+      d1: Number(document.getElementById('d1').value),
       m2: Number(document.getElementById('m2').value),
       g2: Number(document.getElementById('g2').value),
+      n2: Number(document.getElementById('n2').value),
+      d2: Number(document.getElementById('d2').value),
       m2p: Number(document.getElementById('m2p').value),
-      g2p: Number(document.getElementById('g2p').value)
+      g2p: Number(document.getElementById('g2p').value),
+      n2p: Number(document.getElementById('n2p').value),
+      d2p: Number(document.getElementById('d2p').value)
     };
 
     try {
-      // If you later provide an external computeMomentsClient, prefer it.
       let out;
       if (typeof window.computeMomentsClient === 'function' && window.computeMomentsClient !== computeMomentsClient) {
         statusEl.textContent = 'Running provided compute routine...';
@@ -273,11 +266,10 @@
     }
   }
 
-  // initialize
   buildPlotBoxes();
   statusEl.textContent = 'Ready. Click Start to compute and plot.';
   startBtn.addEventListener('click', async () => {
-    buildPlotBoxes(); // clear previous plots
+    buildPlotBoxes();
     await computeAndPlot();
   });
 
