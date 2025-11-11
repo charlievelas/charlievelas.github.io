@@ -12,87 +12,417 @@
 -->
 
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Input with Buttons</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            max-width: 300px;
-            text-align: center;
-        }
-        input[type="number"] {
-            width: 80px;
-            padding: 5px;
-            font-size: 1rem;
-            margin: 10px 0;
-        }
-        button {
-            padding: 8px 15px;
-            margin: 5px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button.add {
-            background-color: #28a745;
-            color: white;
-        }
-        button.subtract {
-            background-color: #dc3545;
-            color: white;
-        }
-        button.reset {
-            background-color: #007bff;
-            color: white;
-        }
-    </style>
-</head>
+<html>
+
+<?php include 'header.html';?>
+<?php include 'EtaPi_moments/counter.php';?>
+
+
+
 <body>
+ 
 
-    <div class="container">
-        <h2>Number Input Example</h2>
-        <input type="number" id="numberBox" value="0" min="0" max="100">
-        <div>
-            <button class="add" onclick="changeValue(1)">+ Add</button>
-            <button class="subtract" onclick="changeValue(-1)">- Subtract</button>
-            <button class="reset" onclick="resetValue()">Reset</button>
-        </div>
-    </div>
+<div id="bloc_page">
+	<?php include 'nav2.html';?>
+</div>
 
-    <script>
-        // Function to change the number value
-        function changeValue(amount) {
-            const input = document.getElementById('numberBox');
-            let currentValue = parseInt(input.value) || 0;
-            let newValue = currentValue + amount;
+<div id="bloc_page2">	
 
-            // Ensure value stays within min/max
-            if (input.min !== "" && newValue < parseInt(input.min)) return;
-            if (input.max !== "" && newValue > parseInt(input.max)) return;
+<section>
+<!--   BELOW YOU MODIFY WHAT YOU WANT  -->
 
-            input.value = newValue;
-        }
+    <h1 id = "moments"> $\gamma p\to \pi^0 \eta p$ </h1>
+    <article>
+    	<p> 
+    	<img src="EtaPi_moments/Frame.png" alt="kinematics" height= 200px align="right"/>
+    	We present the model published in <a href="#mat19a"> [Mat19a] </a> 
+    	illustrating the polarized moments for the reaction
+    	\begin{align}
+    	\vec \gamma (p_\gamma) p(p_N) \to \eta(p_\eta) \pi^0(p_\pi) p(p'_N),
+    	\end{align}
+    	with a linearly polarized beam.
+    	The code can be downloaded in <a href = "#res" > Resources section</a> and simulated 
+    	in the <a href = "#code" > Simulation section</a>. <br>
+    	</p>   
+    	
+    	<h2 id = "def">Definitions</h2>
+        <!-- **************************************************************** -->
+    	<p> $\Omega = (\theta,\phi)$  are the angles of the $\eta$ in the $\eta\pi$ rest frame. 
+    	$\Phi$ is the angle between the polarization and the reaction plane. 
+    	The angles are illustrated on the figure in the helicity frame.
+    	The other kinematical variables are the total energy squared $s = (p_\gamma+p_N)^2$, 
+    	the momentum transferred $t = (p_N- p'_N)^2$ and the $\eta\pi$ mass $m_{\eta\pi}^2 = (p_\eta+p_\pi)^2$. 
+    	</p>
+    	<p>
+    	With a linearly plarized beam, with polarization $P_\gamma$, the intensity is decomposed as
+    	\begin{align}
+    	I(\Omega,\Phi) & = I^0(\Omega) - P_\gamma I^1(\Omega) \cos 2 \Phi - P_\gamma I^2(\Omega) \sin 2 \Phi.
+    	\end{align}
+    	The moments are defined by
+    	\begin{align}
+    	H^0(LM) & =\phantom{- \frac{2}{P_\gamma}} \frac{1}{2\pi}\int I(\Omega,\Phi) d^L_{M0}(\theta) \cos M \phi  \ d\Omega d\Phi ,\\
+    	H^1(LM) & = - \frac{2}{P_\gamma}\frac{1}{2\pi}\int I(\Omega,\Phi) d^L_{M0}(\theta) \cos M \phi \cos 2\Phi\  d\Omega d\Phi ,\\
+    	\text{Im }H^2(LM) & = \frac{2}{P_\gamma}\frac{1}{2\pi}\int I(\Omega,\Phi) d^L_{M0}(\theta) \cos M \phi \sin 2 \Phi\ d\Omega d\Phi.
+    	\end{align}
+    	</p>
+    	<p> The $4\pi$ integrated beam asymmetry $\Sigma_{4\pi}$ and the beam asymmetry along the $y$ axis $\Sigma_y$ are defined by
+    	\begin{align}
+    	\Sigma_{4\pi} & = \frac{1}{P_\gamma} \frac{\int [I(\Omega,0) - I(\Omega,\frac{\pi}{2})] d\Omega}
+    	{\int [I(\Omega,0) + I(\Omega,\frac{\pi}{2})] d\Omega } \\
+    	\Sigma_y & = \frac{1}{P_\gamma} \frac{[I(\Omega_y,0) - I(\Omega_y,\frac{\pi}{2})]  }
+    	{ [I(\Omega_y,0) + I(\Omega_y,\frac{\pi}{2})] }.
+    	\end{align}
+    	They can be expressed with the moments ($\Sigma_y$ truncated to $L=4$)
+    	\begin{align}
+    	\Sigma_{4\pi} & = \frac{H^1(00)}{H^0(00)} \\
+    	\Sigma_y & = \frac{H^1(00) - \frac{5}{2} H^1(20) - 5 \sqrt{\frac{3}{2}} H^1(22)
+ + \frac{27}{8} H^1(40) + \frac{9}{2}\sqrt{\frac{5}{2}} H^1(42) + \frac{9}{4}\sqrt{\frac{35}{2}}  H^1(44)}
+ {H^0(00) - \frac{5}{2} H^0(20) - 5 \sqrt{\frac{3}{2}} H^0(22)
+ + \frac{27}{8} H^0(40) + \frac{9}{2}\sqrt{\frac{5}{2}} H^0(42) + \frac{9}{4}\sqrt{\frac{35}{2}}  H^0(44)}
+    	\end{align}
+    	
+    	 </p>
+    	
+		
+		<h2 id = "model">Model</h2>
+        <!-- **************************************************************** -->
+		<p>
+		We use the reflectivity basis. Our toy model include only the following waves
+		\begin{align}
+		[\ell]^{(\epsilon)}_m = S_0^{(+)}, P_{0,1}^{(+)}, D_{0,1,2}^{(+)}.
+		\end{align}
+		$\epsilon$ is the reflectivity of the partial wave. <br>
+		One can show that $\text{Im }H^2(LM) = -H^1(LM)$ with a basis icluding only waves $[\ell]^{(\epsilon)}_m$ 
+		with positive projection $m\ge 0$. <br>
+		We thus will not display the moments $\text{Im} H^2(LM)$. <br>
+		The wave are parametrized in the $s$-channel frame by 
+		\begin{align}
+		[\ell]^{(\epsilon)}_m & = N_0 N_R \left( \delta_R \frac{\sqrt{-t}}{m_R} \right)^{|m-1|} 
+		\frac{m_R \Gamma_R}{m_R^2-m_{\eta\pi}^2-i m_R \Gamma_R}\ \Gamma[1-\alpha(t)](1-e^{-i\pi\alpha(t)}) s^{\alpha(t)}
+		\end{align}
+		where $R = a_0(980), \pi_1(1600), a_2(1320), a_2(1700) $ are the resonances in the partial wave $\ell=0,1,2$. <br>
+		$N_0 = 20000$ is an overal normalization. 
+		
+		The vector trajectory is $\alpha(t) = 0.5 + 0.9t$. $s$ and $t$ are expressed in GeV$^2$ in these expressions.
+		The resonance parameters are indicated in the Table.
+	
+		<table style="width:40%" align='center' >
+		<caption>Model parameters. $m_R$ and $\Gamma_R$ are in GeV.</caption>
+		<tr >
+		<td> $R$ </td> <td> | </td> <td> $m_R$ </td> <td> $\Gamma_R$ </td> 
+		<td>| </td> <td> </td>  <td> $\phantom{-}$$N_R$ </td>  <td> $\phantom{-}$$\delta_R$ </td>	
+		</tr><tr>
+		<td> $a_0(980)$ </td> <td> | </td> <td> 0.980 </td> <td> 0.075 </td>
+		<td> |</td> <td>  </td>  <td>$\phantom{-}$ 1.00 </td>  <td> $\phantom{-}$1.0 </td> 
+		</tr><tr>
+		<td> $\pi_1(1600)$ </td> <td> | </td> <td> 1.564 </td> <td> 0.492 </td> 
+		<td> |</td> <td>  </td>  <td> $-0.03$ </td>  <td> $-5.0$ </td>
+		</tr><tr>
+		<td> $a_2(1320)$ </td> <td> | </td> <td> 1.318 </td> <td> 0.107 </td> 
+		<td> |</td> <td>  </td>  <td> $-0.109$ </td>  <td> $-2.0$ </td> 
+		</tr><tr>
+		<td> $a_2(1700)$ </td> <td> | </td> <td> 1.722 </td> <td> 0.247 </td> 
+		<td> |</td> <td>  </td>  <td> $-0.036$ </td>  <td> $-2.0$ </td> 
+		</tr> 
+		</table>
+		<br> 
+    	They correspond to the values used in the publication  <a href="#mat19a"> [Mat19a] </a>. <br>
+    	The parameters can be changed in the section <a href="#simu"> Simulation </a>
+    	</p>
+    
+        
+        <h2 id = "ref">References</h2>
+        <!-- **************************************************************** -->
+        <p>
+        [Mat19a] <br>
+        V. Mathieu, et al (JPAC), <br>
+        ``Moments of angular distribution and beam asymmetries in $\eta\pi^0$ photoproduction at GlueX,'' 
+        <a id="mat19a" href="https://arxiv.org/pdf/1906.04841.pdf" target="_blank"> arXiv:1906.04841 </a> [hep-ph],
+        <!--  <a href="http://journals.aps.org/prd/abstract/10.1103/PhysRevD.92.074004" target="_blank">
+        Phys. Rev. D <strong>92</strong>, 074004 (2015)</a> -->
+        </p>  
+           
+       <h2 id  ="res"> Resources </h2> 
+       <!-- *********************************************************************************** -->
+        <ul>
+            <li><strong>C/C++: </strong>
+                <a href="EtaPi_moments/Archive.zip" target="_blank"> C/C++ files </a>
+            <li><strong>Input file: </strong>
+                <a href="EtaPi_moments/par_simu.txt" target="_blank"> par_simu.txt </a>,
+                <a href="EtaPi_moments/par_model.txt" target="_blank"> par_model.txt </a>. </li>
+            <li><strong>Output files: </strong>
+                <a href="EtaPi_moments/moment0.txt" target="_blank"> moment0.txt </a>, 
+                <a href="EtaPi_moments/moment1.txt" target="_blank"> moment1.txtt </a>,
+                <a href="EtaPi_moments/moment0_GJ.txt" target="_blank"> BA.txt </a>, 
+            <li><strong>gnuplot file: </strong>
+                <a href="EtaPi_moments/gnuplot.tx" target="_blank"> gnuplot.txt </a>
+            <li> <strong> Contact person: </strong> <a href="mailto:mathieuv@indiana.edu"> 
+            	Vincent Mathieu</a> </li>
+            <li><strong>Last update: </strong> September 2019</li>
+        </ul>  
+       The zip file contains the file main.c, main_GJ.c, modules.c and their header files. <br>
+       The file main_GJ.c contains the same function as main.c but rotate the SDME to the GJ frame. <br>
+       To compile: gcc main.c main_GJ.c modules.c <br> <br>
+		
+		<label class="collapse" for="_1">
+		Format of the input and output files:
+	        <a>[show/hide]</a>
+	      </label>
+	      <input id="_1" type="checkbox" />
+	      <div>
+	      <ol>
+	        <li> <strong>par_simu.txt:</strong><br>
+	        	The simulation parameters are $E_\gamma$, $t$, $dm$, $isGJ$</li>
+	        <li> <strong>par_model.txt:</strong><br>
+	        	The model parameters are $m_R$, $\Gamma_R$, $x_R=1$, $N_r$, $\delta_R$. <br>
+	        	The three are lines for the three resonances: $a_0(980)$, $\pi_1(1600)$, $a_2(1320)$.
+	        	</li>
+	        <li> <strong>momentX.txt:</strong><br>
+	        	The first column is the $\eta\pi$ mass in GeV. 
+	        	The other columns are $LM=$00, 10,11, 20,21,22, 30,31,32,33, 40,41,42,43,44. </li>
+	        <li> <strong>BA.txt:</strong><br>
+	        	The first column is the $\eta\pi$ mass in GeV. 
+	        	The second column is the 4 $\pi$ beam asymmetry. 
+	        	The third column is the beam asymmetry along the $y$ axis. 
+	        	</li>
+	      	</ol>
+	      </div>
+	 
+       <label class="collapse" for="_2">
+		Description of the code:
+	        <a>[show/hide]</a>
+	      </label>
+	      <input id="_2" type="checkbox" />
+	      <div>
+	      Funtion in main.c
+	      <ol>
+	        <li> <strong>Moments:</strong>
+	        Compute the moments $H^{\alpha}(LM)$ from the SDME
+	        </li>
+	        <li> <strong>sdme:</strong>
+	        Compute the SDME $\rho^{\alpha, \ell \ell'}_{mm'}$ from the partial waves.
+	        </li>
+	        <li> <strong>partialwaves:</strong>
+	        Compute the partial waves for our toy model.
+	        </li>
+	        <li> <strong>printMoments:</strong>
+	        Print the moments in files.
+	        </li>
+	        <li> <strong>intH and intMoments:</strong>
+	  		integrate the moments in $t$
+	        </li>	
+	        </ol>
+	        </div>	 
+	 
+       <br> <br>  
+       A general code to reconstruct moments from partial waves is available:
+       <a href="EtaPi_moments/moments.zip" target="_blank"> C/C++ moments </a> <br>  
+       The zip file contains the files main.cpp, tools.cpp, moments.cpp and their hearders. <br>
+       The file moments.cpp contains the routines returning all moments for given S, P, D waves (all spin projections). <br>
+       The file tools.cpp contains the Wigner-d functions and other accessory functions. <br>
+       The file main.cpp generates random waves and call the moments routines. 
+       
+        
+       <h2 id  ="code"> Simulation </h2> 
+       <!-- **************************************************************************** -->
+       <form method="post" action="EtaPi_moments.php#simu">
+        	<p> 
+   			The user can choose the beam energy (in the target rest frame) and the momentum transferred $t$. <br>
+   			<!--  Choosing $t=0.0$ perform the integration between $t_\text{min}$ and $t_\text{max}$. <br> -->
+   			The moments are computed in the interval $m_\eta + m_\pi \le m_{\eta\pi} \le 2.1$ GeV. 
+   			The binning in $m_{\eta\pi}$$dm$ is specified by $dm$. <br>
+   			The moments are computed in the helicity frame but can be displayed in the GJ frame.
+   			The simulation takes a few second to rotate the moments the GJ frame. <br>
+        	</p>
+        	
+        	<strong>Kinematics</strong>:
+        	<div>
+	      	<table style="width:50%" > 
+	      	<tr> <td> <label > $E_\gamma$ in GeV  </label> </td>
+        	<td> <input type="number" name="Eg" size=5 value=8.5 step =0.01  > </td> 
+        	</tr>
+       		<tr> <td> $t$ in GeV$^2$ </td>    
+        	<td> <input type="number" name="t" size=5 value=-0.1 step=0.01 > </td>
+        	<td>  </td> </tr>
+        	</tr>
+       		<tr> <td> $dm$ in GeV </td>    
+        	<td> <input type="number" name="dm" size=5 value=0.02 step=0.01 > </td>
+        	<td> </td> </tr>
+       		<tr> <td> Frame: </td> 
+        	<td><input type="radio" name="FR" size=5 value=0 checked > 
+        	<label > helicity  </label> </td>
+        	<td> <input type="radio" name="FR" size=5 value=1  >
+        	<label > Gottfried-Jackson  </label> </td> </tr>
+       		</table>
+       		</div>
+       		
+       		<br> <strong>Model parameters</strong>:
+	      	<div>
+	      	<table style="width:95%" > 
+	      		<tr> <td> Resonance </td> <td> $a_0(980)$  </td> <td> $\pi_1(1600)$</td> 
+	      		<td> $a_2(1320)$</td> <td> $a_2(1700)$</td> </tr> 
+	      		<tr>
+	      		<td> mass ($m_R$) in GeV </td>
+       			<td> <input type="number" name="m0"  value=0.980 step =0.001  > </td>
+        		<td> <input type="number" name="m1"  value=1.564 step =0.001  > </td>
+        		<td> <input type="number" name="m2"  value=1.318 step =0.001  > </td>
+        		<td> <input type="number" name="m2p"  value=1.722 step =0.001  > </td>
+        		</tr>
+        		<tr>
+	      		<td> width ($\Gamma_R$) in GeV </td>
+       			<td> <input type="number" name="g0"  value=0.075 step =0.001  > </td>
+        		<td> <input type="number" name="g1"  value=0.492 step =0.001  > </td>
+        		<td> <input type="number" name="g2"  value=0.107 step =0.001  > </td>
+        		<td> <input type="number" name="g2p"  value=0.247 step =0.001  > </td>
+        		</tr>
+        		<tr>
+        		<tr>
+	      		<td> normalization ($N_R$) </td>
+       			<td> <input type="number" name="n0"  value=1.00 step =0.01  > </td>
+        		<td> <input type="number" name="n1"  value=-0.03 step =0.01  > </td>
+        		<td> <input type="number" name="n2"  value=-0.11 step =0.01  > </td>
+        		<td> <input type="number" name="n2p"  value=-0.04 step =0.01  > </td>
+        		</tr>
+        		<tr>
+	      		<td> spin-flip coupling ($\delta_R$) </td>
+       			<td> <input type="number" name="d0"  value=1.00 step =0.01  > </td>
+        		<td> <input type="number" name="d1"  value=-5.0 step =0.01  > </td>
+        		<td> <input type="number" name="d2"  value=-2.0 step =0.01  > </td>
+        		<td> <input type="number" name="d2p"  value=-2.0 step =0.01  > </td>
+        		</tr>  		
+        	</table>
+       		</div>
+       		<br>
+        	<input type=submit value="Start" name="submit" ><input type="reset" value="reset">
+        	
+       </form>
+    
+  		<?php
+		function display()
+		{			
+			echo '<hr width= "93%" ALIGN="LEFT">';		// print horizontal line
+			echo '<h2 id  ="simu"> Results </h2> ';
+			
+			// simulation parameters
+			$Eg = $_POST["Eg"]; 	$t = $_POST["t"]; $FR = $_POST["FR"]; $dm = $_POST["dm"]; 
+			echo "Simulation at Eg = ", $Eg, " GeV <br>";
+			if($t==0){ echo "Moments integrated in t <br> <br>";}
+			else {echo "Moments at t = ", $t,"<br>";}
+			switch ($FR){ 
+				case 0: echo "Moments in the helicity frame <br> <br>"; break;
+				case 1: echo "Moments in the Gottfried-Jackon frame <br> <br>"; break;
+			}
 
-        // Function to reset the number value
-        function resetValue() {
-            document.getElementById('numberBox').value = 0;
-        }
-    </script>
+			
+			// model parameters
+			$data0 = array($_POST["m0"], " ",$_POST["g0"]," ", 1.0 ," ",$_POST["n0"]," ",$_POST["d0"],"\n");
+			$data1 = array($_POST["m1"], " ",$_POST["g1"]," ", 1.0 ," ",$_POST["n1"]," ",$_POST["d1"],"\n");
+			$data2 = array($_POST["m2"], " ",$_POST["g2"]," ", 1.0 ," ",$_POST["n2"]," ",$_POST["d2"],"\n");
+			$data2p = array($_POST["m2p"], " ",$_POST["g2p"]," ", 1.0 ," ",$_POST["n2p"]," ",$_POST["d2p"],"\n");
+				
+				
+			$rootPath = getcwd();						// change the directory
+			chdir('EtaPi_moments');						// because the execution write files 
+														// in the current directory
+			
+			// print the simulation parameters in simu.txt
+			$data = array($Eg, " ", $t, " ", $dm," ", $FR);
+			// t range is fixed
+			file_put_contents("par_simu.txt", $data);
+			// write model parameters in param.txt
+			file_put_contents("par_model.txt", $data0);
+			file_put_contents("par_model.txt", $data1, FILE_APPEND);
+			file_put_contents("par_model.txt", $data2, FILE_APPEND);
+			file_put_contents("par_model.txt", $data2p, FILE_APPEND);
+						
+			exec('./moments.exe');							// run the program
+			
+			$ret = system('gnuplot44 gnuplot.txt ', $response);
+			
+			echo "The x-axis of the plots is -t in GeV^2. <br>";
+			
+			// Download the plots
+			echo "Download the output files: 
+        			<a href='EtaPi_moments/moment0.txt' target='_blank'> moment0.txt </a>,
+        			<a href='EtaPi_moments/moment1.txt' target='_blank'> moment1.txt </a>,
+					<a href='EtaPi_moments/BA.txt' target='_blank'> BA.txt </a> <br>";
+			
+					
+			echo "Download the plots:
+				<a href='EtaPi_moments/pH00.png' target='_blank'> pH00.png </a>,
+        		<a href='EtaPi_moments/pH10.png' target='_blank'> pH10.png </a>,
+    			<a href='EtaPi_moments/pH11.png' target='_blank'> pH11.png </a>,
+    			<a href='EtaPi_moments/pH20.png' target='_blank'> pH20.png </a>,
+    			<a href='EtaPi_moments/pH21.png' target='_blank'> pH21.png </a>,
+    			<a href='EtaPi_moments/pH22.png' target='_blank'> pH22.png </a>, <br>
+    			<a href='EtaPi_moments/pH30.png' target='_blank'> pH30.png </a>,
+    			<a href='EtaPi_moments/pH31.png' target='_blank'> pH31.png </a>,
+    			<a href='EtaPi_moments/pH32.png' target='_blank'> pH32.png </a>,
+    			<a href='EtaPi_moments/pH33.png' target='_blank'> pH33.png </a>,
+    			<a href='EtaPi_moments/pH40.png' target='_blank'> pH41.png </a>,
+    			<a href='EtaPi_moments/pH41.png' target='_blank'> pH41.png </a>,
+    			<a href='EtaPi_moments/pH42.png' target='_blank'> pH42.png </a>,
+    			<a href='EtaPi_moments/pH43.png' target='_blank'> pH43.png </a>,
+    			<a href='EtaPi_moments/pH43.png' target='_blank'> pH44.png </a>,
+    			<a href='EtaPi_moments/pBA.png'  target='_blank'> pBA.png  </a>, 
+    			<a href='EtaPi_moments/pBAy.png' target='_blank'> pBAy.png </a>";
+        		
+			// Display the plots
+			echo "<br> <br>";
+			echo "<img src='EtaPi_moments/pH00.png' width= 275px /> ";
+			echo "<img src='EtaPi_moments/pH10.png' width= 275px /> ";
+			echo "<img src='EtaPi_moments/pH11.png' width= 275px /> <br>";
+			
+			
+			echo "<img src='EtaPi_moments/pH20.png' width= 275px /> ";
+			echo "<img src='EtaPi_moments/pH21.png' width= 275px /> ";
+			echo "<img src='EtaPi_moments/pH22.png' width= 275px /> <br>";
+			
+			echo "<img src='EtaPi_moments/pH30.png' width= 275px /> ";
+			echo "<img src='EtaPi_moments/pH31.png' width= 275px /> ";
+			echo "<img src='EtaPi_moments/pH32.png' width= 275px /> <br>";
+			
+			echo "<img src='EtaPi_moments/pH40.png' width= 275px /> ";
+			echo "<img src='EtaPi_moments/pH41.png' width= 275px /> ";
+			echo "<img src='EtaPi_moments/pH42.png' width= 275px /> <br>";
+			echo "<img src='EtaPi_moments/pBA.png'  width= 400px />";
+			echo "<img src='EtaPi_moments/pBAy.png' width= 400px /> <br>";
+				
+			
+			chdir($rootPath);							// go back to root directory
+						
+		}
+		
+		
+		
+		
+		
+		if(isset($_POST['submit'])) // call the function display if something is submitted
+		{
+   		display();
+		} 
+		?> 
+	
+        
+    </article>
+    
+ 
+</section>
 
+<!-- FOOTER -->
+<?php 
+	// Read the current value of our counter file
+	$counter_name = "EtaPi_moments/counter.txt";
+	$f = fopen($counter_name,"r");
+	$counterVal = fread($f, filesize($counter_name));
+	fclose($f);
+	echo "<footer>
+    		<p> This page has been accessed $counterVal times. <br>
+    		Designed by <a href='mailto:vincent.mathieu@umons.ac.be'>Vincent Mathieu</a> 
+    		</p>
+		</footer>";
+?>
+
+</div>
 </body>
 </html>
