@@ -11,228 +11,41 @@
 </html>
 -->
 
-<!DOCTYPE html>
-<html>
-
-<?php include 'header.html';?>
-<?php include 'EtaPi_moments/counter.php';?>
-
-
-
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simple Math Example — Square & Square Root (Client-side JS)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 20px; max-width: 640px; }
+    label { display:inline-block; width:120px; }
+    input[type="number"] { width:140px; }
+    .row { margin:10px 0; }
+    #results { margin-top:16px; padding:12px; border:1px solid #ddd; border-radius:6px; background:#fafafa; }
+    .error { color: #b00020; }
+    button { margin-right:8px; }
+  </style>
+</head>
 <body>
- 
+  <h1>Client-side JS demo — square & square root</h1>
+  <p>This is a minimal demo of client-side JavaScript. Enter a number and the page will compute its square and (if valid) square root entirely in your browser — no server required.</p>
 
-<div id="bloc_page">
-	<?php include 'nav2.html';?>
-</div>
+  <div class="row">
+    <label for="num">Number</label>
+    <input id="num" type="number" step="any" value="4" />
+  </div>
 
-<div id="bloc_page2">	
+  <div class="row">
+    <button id="computeBtn">Compute</button>
+    <button id="resetBtn" type="button">Reset</button>
+    <a id="downloadLink" style="display:none" download="math_results.txt">Download results</a>
+  </div>
 
-<section>
-<!--   BELOW YOU MODIFY WHAT YOU WANT  -->
+  <div id="results" aria-live="polite">
+    Results will appear here after you click Compute.
+  </div>
 
-    <h1 id = "moments"> $\gamma p\to \pi^0 \eta p$ </h1>
-    <article>
-       <h2 id  ="code"> Simulation </h2> 
-       <!-- **************************************************************************** -->
-       <form method="post" action="EtaPi_moments.php#simu">
-        	<p> 
-   			The user can choose the beam energy (in the target rest frame) and the momentum transferred $t$. <br>
-   			<!--  Choosing $t=0.0$ perform the integration between $t_\text{min}$ and $t_\text{max}$. <br> -->
-   			The moments are computed in the interval $m_\eta + m_\pi \le m_{\eta\pi} \le 2.1$ GeV. 
-   			The binning in $m_{\eta\pi}$$dm$ is specified by $dm$. <br>
-   			The moments are computed in the helicity frame but can be displayed in the GJ frame.
-   			The simulation takes a few second to rotate the moments the GJ frame. <br>
-        	</p>
-        	
-        	<strong>Kinematics</strong>:
-        	<div>
-	      	<table style="width:50%" > 
-	      	<tr> <td> <label > $E_\gamma$ in GeV  </label> </td>
-        	<td> <input type="number" name="Eg" size=5 value=8.5 step =0.01  > </td> 
-        	</tr>
-       		<tr> <td> $t$ in GeV$^2$ </td>    
-        	<td> <input type="number" name="t" size=5 value=-0.1 step=0.01 > </td>
-        	<td>  </td> </tr>
-        	</tr>
-       		<tr> <td> $dm$ in GeV </td>    
-        	<td> <input type="number" name="dm" size=5 value=0.02 step=0.01 > </td>
-        	<td> </td> </tr>
-       		<tr> <td> Frame: </td> 
-        	<td><input type="radio" name="FR" size=5 value=0 checked > 
-        	<label > helicity  </label> </td>
-        	<td> <input type="radio" name="FR" size=5 value=1  >
-        	<label > Gottfried-Jackson  </label> </td> </tr>
-       		</table>
-       		</div>
-       		
-       		<br> <strong>Model parameters</strong>:
-	      	<div>
-	      	<table style="width:95%" > 
-	      		<tr> <td> Resonance </td> <td> $a_0(980)$  </td> <td> $\pi_1(1600)$</td> 
-	      		<td> $a_2(1320)$</td> <td> $a_2(1700)$</td> </tr> 
-	      		<tr>
-	      		<td> mass ($m_R$) in GeV </td>
-       			<td> <input type="number" name="m0"  value=0.980 step =0.001  > </td>
-        		<td> <input type="number" name="m1"  value=1.564 step =0.001  > </td>
-        		<td> <input type="number" name="m2"  value=1.318 step =0.001  > </td>
-        		<td> <input type="number" name="m2p"  value=1.722 step =0.001  > </td>
-        		</tr>
-        		<tr>
-	      		<td> width ($\Gamma_R$) in GeV </td>
-       			<td> <input type="number" name="g0"  value=0.075 step =0.001  > </td>
-        		<td> <input type="number" name="g1"  value=0.492 step =0.001  > </td>
-        		<td> <input type="number" name="g2"  value=0.107 step =0.001  > </td>
-        		<td> <input type="number" name="g2p"  value=0.247 step =0.001  > </td>
-        		</tr>
-        		<tr>
-        		<tr>
-	      		<td> normalization ($N_R$) </td>
-       			<td> <input type="number" name="n0"  value=1.00 step =0.01  > </td>
-        		<td> <input type="number" name="n1"  value=-0.03 step =0.01  > </td>
-        		<td> <input type="number" name="n2"  value=-0.11 step =0.01  > </td>
-        		<td> <input type="number" name="n2p"  value=-0.04 step =0.01  > </td>
-        		</tr>
-        		<tr>
-	      		<td> spin-flip coupling ($\delta_R$) </td>
-       			<td> <input type="number" name="d0"  value=1.00 step =0.01  > </td>
-        		<td> <input type="number" name="d1"  value=-5.0 step =0.01  > </td>
-        		<td> <input type="number" name="d2"  value=-2.0 step =0.01  > </td>
-        		<td> <input type="number" name="d2p"  value=-2.0 step =0.01  > </td>
-        		</tr>  		
-        	</table>
-       		</div>
-       		<br>
-        	<input type=submit value="Start" name="submit" ><input type="reset" value="reset">
-        	
-       </form>
-    
-  		<?php
-		function display()
-		{			
-			echo '<hr width= "93%" ALIGN="LEFT">';		// print horizontal line
-			echo '<h2 id  ="simu"> Results </h2> ';
-			
-			// simulation parameters
-			$Eg = $_POST["Eg"]; 	$t = $_POST["t"]; $FR = $_POST["FR"]; $dm = $_POST["dm"]; 
-			echo "Simulation at Eg = ", $Eg, " GeV <br>";
-			if($t==0){ echo "Moments integrated in t <br> <br>";}
-			else {echo "Moments at t = ", $t,"<br>";}
-			switch ($FR){ 
-				case 0: echo "Moments in the helicity frame <br> <br>"; break;
-				case 1: echo "Moments in the Gottfried-Jackon frame <br> <br>"; break;
-			}
-
-			
-			// model parameters
-			$data0 = array($_POST["m0"], " ",$_POST["g0"]," ", 1.0 ," ",$_POST["n0"]," ",$_POST["d0"],"\n");
-			$data1 = array($_POST["m1"], " ",$_POST["g1"]," ", 1.0 ," ",$_POST["n1"]," ",$_POST["d1"],"\n");
-			$data2 = array($_POST["m2"], " ",$_POST["g2"]," ", 1.0 ," ",$_POST["n2"]," ",$_POST["d2"],"\n");
-			$data2p = array($_POST["m2p"], " ",$_POST["g2p"]," ", 1.0 ," ",$_POST["n2p"]," ",$_POST["d2p"],"\n");
-				
-				
-			$rootPath = getcwd();						// change the directory
-			chdir('EtaPi_moments');						// because the execution write files 
-														// in the current directory
-			
-			// print the simulation parameters in simu.txt
-			$data = array($Eg, " ", $t, " ", $dm," ", $FR);
-			// t range is fixed
-			file_put_contents("par_simu.txt", $data);
-			// write model parameters in param.txt
-			file_put_contents("par_model.txt", $data0);
-			file_put_contents("par_model.txt", $data1, FILE_APPEND);
-			file_put_contents("par_model.txt", $data2, FILE_APPEND);
-			file_put_contents("par_model.txt", $data2p, FILE_APPEND);
-						
-			exec('./moments.exe');							// run the program
-			
-			$ret = system('gnuplot44 gnuplot.txt ', $response);
-			
-			echo "The x-axis of the plots is -t in GeV^2. <br>";
-			
-			// Download the plots
-			echo "Download the output files: 
-        			<a href='EtaPi_moments/moment0.txt' target='_blank'> moment0.txt </a>,
-        			<a href='EtaPi_moments/moment1.txt' target='_blank'> moment1.txt </a>,
-					<a href='EtaPi_moments/BA.txt' target='_blank'> BA.txt </a> <br>";
-			
-					
-			echo "Download the plots:
-				<a href='EtaPi_moments/pH00.png' target='_blank'> pH00.png </a>,
-        		<a href='EtaPi_moments/pH10.png' target='_blank'> pH10.png </a>,
-    			<a href='EtaPi_moments/pH11.png' target='_blank'> pH11.png </a>,
-    			<a href='EtaPi_moments/pH20.png' target='_blank'> pH20.png </a>,
-    			<a href='EtaPi_moments/pH21.png' target='_blank'> pH21.png </a>,
-    			<a href='EtaPi_moments/pH22.png' target='_blank'> pH22.png </a>, <br>
-    			<a href='EtaPi_moments/pH30.png' target='_blank'> pH30.png </a>,
-    			<a href='EtaPi_moments/pH31.png' target='_blank'> pH31.png </a>,
-    			<a href='EtaPi_moments/pH32.png' target='_blank'> pH32.png </a>,
-    			<a href='EtaPi_moments/pH33.png' target='_blank'> pH33.png </a>,
-    			<a href='EtaPi_moments/pH40.png' target='_blank'> pH41.png </a>,
-    			<a href='EtaPi_moments/pH41.png' target='_blank'> pH41.png </a>,
-    			<a href='EtaPi_moments/pH42.png' target='_blank'> pH42.png </a>,
-    			<a href='EtaPi_moments/pH43.png' target='_blank'> pH43.png </a>,
-    			<a href='EtaPi_moments/pH43.png' target='_blank'> pH44.png </a>,
-    			<a href='EtaPi_moments/pBA.png'  target='_blank'> pBA.png  </a>, 
-    			<a href='EtaPi_moments/pBAy.png' target='_blank'> pBAy.png </a>";
-        		
-			// Display the plots
-			echo "<br> <br>";
-			echo "<img src='EtaPi_moments/pH00.png' width= 275px /> ";
-			echo "<img src='EtaPi_moments/pH10.png' width= 275px /> ";
-			echo "<img src='EtaPi_moments/pH11.png' width= 275px /> <br>";
-			
-			
-			echo "<img src='EtaPi_moments/pH20.png' width= 275px /> ";
-			echo "<img src='EtaPi_moments/pH21.png' width= 275px /> ";
-			echo "<img src='EtaPi_moments/pH22.png' width= 275px /> <br>";
-			
-			echo "<img src='EtaPi_moments/pH30.png' width= 275px /> ";
-			echo "<img src='EtaPi_moments/pH31.png' width= 275px /> ";
-			echo "<img src='EtaPi_moments/pH32.png' width= 275px /> <br>";
-			
-			echo "<img src='EtaPi_moments/pH40.png' width= 275px /> ";
-			echo "<img src='EtaPi_moments/pH41.png' width= 275px /> ";
-			echo "<img src='EtaPi_moments/pH42.png' width= 275px /> <br>";
-			echo "<img src='EtaPi_moments/pBA.png'  width= 400px />";
-			echo "<img src='EtaPi_moments/pBAy.png' width= 400px /> <br>";
-				
-			
-			chdir($rootPath);							// go back to root directory
-						
-		}
-		
-		
-		
-		
-		
-		if(isset($_POST['submit'])) // call the function display if something is submitted
-		{
-   		display();
-		} 
-		?> 
-	
-        
-    </article>
-    
- 
-</section>
-
-<!-- FOOTER -->
-<?php 
-	// Read the current value of our counter file
-	$counter_name = "EtaPi_moments/counter.txt";
-	$f = fopen($counter_name,"r");
-	$counterVal = fread($f, filesize($counter_name));
-	fclose($f);
-	echo "<footer>
-    		<p> This page has been accessed $counterVal times. <br>
-    		Designed by <a href='mailto:vincent.mathieu@umons.ac.be'>Vincent Mathieu</a> 
-    		</p>
-		</footer>";
-?>
-
-</div>
+  <script src="calc.js"></script>
 </body>
 </html>
