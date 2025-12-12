@@ -18,6 +18,7 @@
     .controls { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
     table.params { width:100%; border-collapse: collapse; }
     table.params td, table.params th { padding:6px; vertical-align:middle; }
+    table.params th { text-align: left; font-weight: 600; }
     table.params input[type="number"] { width:90px; }
   </style>
 </head>
@@ -48,12 +49,12 @@
       <table class="params">
         <thead>
           <tr>
-            <td>Resonance</td>
-            <td>L</td>
-            <td>m</td>
-            <td>Mass (GeV)</td>
-            <td>Width (GeV)</td>
-            <td>Amplitude</td>
+            <th scope="col">Resonance</th>
+            <th scope="col">L</th>
+            <th scope="col">m</th>
+            <th scope="col">Mass (GeV)</th>
+            <th scope="col">Width (GeV)</th>
+            <th scope="col">Amplitude</th>
           </tr>
         </thead>
         <tbody>
